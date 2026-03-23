@@ -1,1 +1,1 @@
-# claude-sandbox
+# claude-sandbox（クロードサンドボックス）
