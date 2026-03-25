@@ -1,7 +1,7 @@
 # タスクドキュメント：スケジュール管理アプリ実装
 
-- [ ] **1. src/types/index.ts でコアデータモデルを定義する**
-  - **ファイル**: `src/types/index.ts`
+- [ ] **1. types/index.ts でコアデータモデルを定義する**
+  - **ファイル**: `types/index.ts`
   - 案件（Project）および予定（Schedule）のTypeScriptインターフェースを定義する
   - 予定には `status` ('candidate' | 'confirmed') と最大5件の `candidateDates` 配列を含める
   - **目的**: アプリケーション全体での型安全性を確保し、候補日管理の仕様をコードに反映する
@@ -10,7 +10,7 @@
   - **プロンプト**: Role: TypeScript型設計のエキスパート | Task: 案件(Project)と予定(Schedule)のインターフェースを作成してください。予定は「候補(candidate)」と「確定(confirmed)」のステータスを持ち、候補日は最大5件保持できる構造にしてください。 | Restrictions: Nuxt 4環境で利用可能なクリーンな型定義にすること。 | Success: コンパイルエラーがなく、ビジネスロジックに必要なプロパティが網羅されていること。
 
 - [ ] **2. plugins/firebase.client.ts でFirebaseの初期化を行う**
-  - **ファイル**: `src/plugins/firebase.client.ts`
+  - **ファイル**: `app/plugins/firebase.client.ts`
   - Firebase JS SDK を使用して Auth および Firestore を初期化する
   - 環境変数（.env）から設定値を読み込む
   - **目的**: データベースおよび認証機能の基盤を構築する
@@ -19,7 +19,7 @@
   - **プロンプト**: Role: Firebaseエンジニア | Task: Nuxt 4のクライアントプラグインとしてFirebase(Auth/Firestore)を初期化するコードを記述してください。環境変数からConfigを読み込むように設定してください。 | Restrictions: 無料枠（Sparkプラン）を意識し、不要な接続が発生しないようにすること。 | Success: アプリ起動時にFirebaseインスタンスが正しく注入され、コンソールにエラーが出ないこと。
 
 - [ ] **3. composables/useSchedules.ts で予定管理ロジックを実装する**
-  - **ファイル**: `src/composables/useSchedules.ts`
+  - **ファイル**: `app/composables/useSchedules.ts`
   - 予定の追加、および候補日から確定へのステータス変更ロジックを実装する
   - **重要**: 確定ステータスへの変更時、他の候補日を配列から削除する処理をアトミックに実装する
   - **目的**: アプリケーションの主要なビジネスロジックをカプセル化する
@@ -28,7 +28,7 @@
   - **プロンプト**: Role: フロントエンドエンジニア | Task: 予定のステータスを更新する関数を実装してください。特に「確定」に変更された際、選択された日付以外を候補日リストから完全に削除するロジックを含めてください。 | Restrictions: Firestoreの書き込み回数を最小限に抑えること。 | Success: ステータス変更後にDB上のデータが正しく更新され、不要な候補日が削除されていること。
 
 - [ ] **4. pages/overloaded-days.vue で過密日確認ページを作成する**
-  - **ファイル**: `src/pages/overloaded-days.vue`
+  - **ファイル**: `app/pages/overloaded-days.vue`
   - 全案件の予定を取得し、同日に3つ以上の「確定済み」予定がある日をリストアップする
   - **目的**: リソース過多の日をユーザーが即座に把握できるようにする
   - **参照**: Firestore クエリ (`where('status', '==', 'confirmed')`)

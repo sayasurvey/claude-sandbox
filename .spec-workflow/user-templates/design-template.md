@@ -65,6 +65,4 @@ graph TD
   ```javascript
   allow read, write: if request.auth != null && request.auth.uid == resource.data.ownerId
   ```
-
-### セキュリティ設計
 * **認証ガード**: 認証済みかつ、リソースの所有者のみが操作可能なルールを徹底します。
