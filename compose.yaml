@@ -1,0 +1,14 @@
+services:
+  app:
+    build: .
+    ports:
+      - "3000:3000"
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - /app/.nuxt
+    env_file:
+      - .env
+    environment:
+      - HOST=0.0.0.0
+      - CHOKIDAR_USEPOLLING=true

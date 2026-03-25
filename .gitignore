@@ -1,0 +1,38 @@
+# Nuxt 開発・ビルド出力
+.nuxt
+.output
+.data
+.env
+.env.*
+!.env.example
+
+# 依存パッケージ
+node_modules
+
+# ログ
+*.log
+npm-debug.log*
+
+# OS固有ファイル
+.DS_Store
+Thumbs.db
+
+# エディタ設定
+.vscode/*
+!.vscode/extensions.json
+.idea
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+
+# テスト出力
+coverage
+playwright-report
+test-results
+
+# Firebase
+.firebase/
+firebase-debug.log
+firestore-debug.log
+ui-debug.log
