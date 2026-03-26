@@ -142,7 +142,6 @@ const handleSubmit = async (): Promise<void> => {
     } else {
       await signUp(email.value, password.value)
     }
-    await router.push('/')
   } catch (error) {
     errorMessage.value = getErrorMessage(error)
   } finally {

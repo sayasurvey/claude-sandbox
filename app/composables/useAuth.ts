@@ -42,8 +42,7 @@ export const useAuth = () => {
    */
   const signIn = async (email: string, password: string): Promise<void> => {
     try {
-      const result = await signInWithEmailAndPassword(auth, email, password)
-      currentUser.value = result.user
+      await signInWithEmailAndPassword(auth, email, password)
     } catch (error) {
       console.error('ログインエラー:', error)
       throw error
@@ -57,8 +56,7 @@ export const useAuth = () => {
    */
   const signUp = async (email: string, password: string): Promise<void> => {
     try {
-      const result = await createUserWithEmailAndPassword(auth, email, password)
-      currentUser.value = result.user
+      await createUserWithEmailAndPassword(auth, email, password)
     } catch (error) {
       console.error('新規登録エラー:', error)
       throw error
