@@ -1,77 +1,70 @@
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center px-4 py-12">
-    <div class="w-full max-w-md">
+  <div class="login-page">
+    <div class="login-card-wrapper">
       <!-- ロゴ・タイトル -->
-      <div class="text-center mb-8">
-        <div class="flex justify-center mb-4">
-          <div class="bg-blue-600 p-3 rounded-2xl">
+      <div class="login-header">
+        <div class="logo-icon-wrap">
+          <div class="logo-icon-bg">
             <CalendarDays class="w-10 h-10 text-white" />
           </div>
         </div>
-        <h1 class="text-2xl font-bold text-gray-900">スケジュール管理</h1>
-        <p class="mt-2 text-sm text-gray-600">案件ごとのスケジュール管理アプリ</p>
+        <h1 class="login-title">スケジュール管理</h1>
+        <p class="login-subtitle">案件ごとのスケジュール管理アプリ</p>
       </div>
 
       <!-- タブ切り替え -->
-      <div class="bg-white rounded-2xl shadow-lg overflow-hidden">
-        <div class="flex border-b">
+      <div class="login-card">
+        <div class="tab-bar">
           <button
-            class="flex-1 py-4 text-sm font-medium transition-colors"
-            :class="isLoginMode
-              ? 'text-blue-600 border-b-2 border-blue-600 bg-blue-50'
-              : 'text-gray-500 hover:text-gray-700'"
+            class="tab-btn"
+            :class="isLoginMode ? 'tab-btn--active' : 'tab-btn--inactive'"
             @click="isLoginMode = true"
           >
             ログイン
           </button>
           <button
-            class="flex-1 py-4 text-sm font-medium transition-colors"
-            :class="!isLoginMode
-              ? 'text-blue-600 border-b-2 border-blue-600 bg-blue-50'
-              : 'text-gray-500 hover:text-gray-700'"
+            class="tab-btn"
+            :class="!isLoginMode ? 'tab-btn--active' : 'tab-btn--inactive'"
             @click="isLoginMode = false"
           >
             新規登録
           </button>
         </div>
 
-        <div class="p-6 sm:p-8">
+        <div class="form-body">
           <!-- エラーメッセージ -->
-          <div
-            v-if="errorMessage"
-            class="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg flex items-center gap-2 text-sm text-red-700"
-          >
+          <div v-if="errorMessage" class="error-box">
             <AlertCircle class="w-4 h-4 flex-shrink-0" />
             <span>{{ errorMessage }}</span>
           </div>
 
           <!-- フォーム -->
-          <form class="space-y-4" @submit.prevent="handleSubmit">
+          <form class="login-form" @submit.prevent="handleSubmit">
             <!-- メールアドレス -->
             <div>
-              <label for="email" class="block text-sm font-medium text-gray-700 mb-1">
+              <label for="email" class="form-label">
                 メールアドレス
               </label>
-              <div class="relative">
-                <Mail class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <div class="input-wrapper">
+                <Mail class="input-icon" />
                 <input
                   id="email"
                   v-model="email"
                   type="email"
                   required
                   placeholder="example@email.com"
-                  class="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+                  class="text-input"
                 />
               </div>
             </div>
 
             <!-- パスワード -->
             <div>
-              <label for="password" class="block text-sm font-medium text-gray-700 mb-1">
+              <label for="password" class="form-label">
                 パスワード
               </label>
-              <div class="relative">
-                <Lock class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <div class="input-wrapper">
+                <Lock class="input-icon" />
                 <input
                   id="password"
                   v-model="password"
@@ -79,11 +72,11 @@
                   required
                   placeholder="6文字以上"
                   minlength="6"
-                  class="w-full pl-10 pr-10 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+                  class="password-input"
                 />
                 <button
                   type="button"
-                  class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  class="toggle-password-btn"
                   @click="showPassword = !showPassword"
                 >
                   <Eye v-if="showPassword" class="w-4 h-4" />
@@ -96,7 +89,7 @@
             <button
               type="submit"
               :disabled="isSubmitDisabled"
-              class="w-full py-2.5 px-4 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              class="submit-btn"
             >
               <Loader2 v-if="isLoading" class="w-4 h-4 animate-spin" />
               <span>{{ isLoginMode ? 'ログイン' : '新規登録' }}</span>
@@ -185,3 +178,95 @@ const getErrorMessage = (error: unknown): string => {
   return '認証に失敗しました'
 }
 </script>
+
+<style scoped>
+@reference "tailwindcss";
+
+.login-page {
+  @apply min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center px-4 py-12;
+}
+
+.login-card-wrapper {
+  @apply w-full max-w-md;
+}
+
+.login-header {
+  @apply text-center mb-8;
+}
+
+.logo-icon-wrap {
+  @apply flex justify-center mb-4;
+}
+
+.logo-icon-bg {
+  @apply bg-blue-600 p-3 rounded-2xl;
+}
+
+.login-title {
+  @apply text-2xl font-bold text-gray-900;
+}
+
+.login-subtitle {
+  @apply mt-2 text-sm text-gray-600;
+}
+
+.login-card {
+  @apply bg-white rounded-2xl shadow-lg overflow-hidden;
+}
+
+.tab-bar {
+  @apply flex border-b;
+}
+
+.tab-btn {
+  @apply flex-1 py-4 text-sm font-medium transition-colors;
+}
+
+.tab-btn--active {
+  @apply text-blue-600 border-b-2 border-blue-600 bg-blue-50;
+}
+
+.tab-btn--inactive {
+  @apply text-gray-500 hover:text-gray-700;
+}
+
+.form-body {
+  @apply p-6 sm:p-8;
+}
+
+.error-box {
+  @apply mb-4 p-3 bg-red-50 border border-red-200 rounded-lg flex items-center gap-2 text-sm text-red-700;
+}
+
+.login-form {
+  @apply space-y-4;
+}
+
+.form-label {
+  @apply block text-sm font-medium text-gray-700 mb-1;
+}
+
+.input-wrapper {
+  @apply relative;
+}
+
+.input-icon {
+  @apply absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400;
+}
+
+.text-input {
+  @apply w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors;
+}
+
+.password-input {
+  @apply w-full pl-10 pr-10 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors;
+}
+
+.toggle-password-btn {
+  @apply absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600;
+}
+
+.submit-btn {
+  @apply w-full py-2.5 px-4 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2;
+}
+</style>
