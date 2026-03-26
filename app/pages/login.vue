@@ -103,6 +103,7 @@
 
 <script setup lang="ts">
 import { CalendarDays, Mail, Lock, Eye, EyeOff, AlertCircle, Loader2 } from 'lucide-vue-next'
+import type { FirebaseUser } from '../../types/index'
 
 // ログインページはデフォルトレイアウトを使わない
 definePageMeta({
@@ -114,7 +115,7 @@ const { signIn, signUp, currentUser, isLoading: isAuthLoading } = useAuth()
 const router = useRouter()
 
 // ログイン済みの場合はトップページにリダイレクト
-watch(currentUser, (user) => {
+watch(currentUser, (user: FirebaseUser | null) => {
   if (user) {
     router.push('/')
   }

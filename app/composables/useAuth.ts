@@ -3,6 +3,7 @@ import {
   signInWithEmailAndPassword,
   signOut as firebaseSignOut,
   onAuthStateChanged,
+  type Auth,
   type User,
 } from 'firebase/auth'
 
@@ -17,6 +18,7 @@ import {
  */
 export const useAuth = () => {
   const { $auth } = useNuxtApp()
+  const auth = $auth as Auth
 
   // ユーザー状態（グローバルに共有するためuseState使用）
   const currentUser = useState<User | null>('auth-user', () => null)
@@ -25,9 +27,9 @@ export const useAuth = () => {
   const isWatching = useState<boolean>('auth-watching', () => false)
 
   // 認証状態の変化を監視（クライアントサイドのみ・初回のみ登録）
-  if ($auth && !isWatching.value) {
+  if (auth && !isWatching.value) {
     isWatching.value = true
-    onAuthStateChanged($auth, (user) => {
+    onAuthStateChanged(auth, (user) => {
       currentUser.value = user
       isLoading.value = false
     })
@@ -40,7 +42,7 @@ export const useAuth = () => {
    */
   const signIn = async (email: string, password: string): Promise<void> => {
     try {
-      const result = await signInWithEmailAndPassword($auth, email, password)
+      const result = await signInWithEmailAndPassword(auth, email, password)
       currentUser.value = result.user
     } catch (error) {
       console.error('ログインエラー:', error)
@@ -55,7 +57,7 @@ export const useAuth = () => {
    */
   const signUp = async (email: string, password: string): Promise<void> => {
     try {
-      const result = await createUserWithEmailAndPassword($auth, email, password)
+      const result = await createUserWithEmailAndPassword(auth, email, password)
       currentUser.value = result.user
     } catch (error) {
       console.error('新規登録エラー:', error)
@@ -68,7 +70,7 @@ export const useAuth = () => {
    */
   const signOut = async (): Promise<void> => {
     try {
-      await firebaseSignOut($auth)
+      await firebaseSignOut(auth)
       currentUser.value = null
     } catch (error) {
       console.error('ログアウトエラー:', error)
@@ -77,8 +79,8 @@ export const useAuth = () => {
   }
 
   return {
-    currentUser: readonly(currentUser),
-    isLoading: readonly(isLoading),
+    currentUser: computed(() => currentUser.value),
+    isLoading: computed(() => isLoading.value),
     signIn,
     signUp,
     signOut,

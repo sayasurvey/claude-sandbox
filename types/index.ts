@@ -1,4 +1,5 @@
 import type { Timestamp } from 'firebase/firestore'
+export type { User as FirebaseUser } from 'firebase/auth'
 
 /**
  * 候補日の最大件数
