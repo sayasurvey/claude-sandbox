@@ -1,0 +1,34 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // 共通関数：ログイン済みかチェック
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // 案件（projects）コレクション
+    match /projects/{projectId} {
+      // 読み取り：自分の案件のみ
+      allow read: if isAuthenticated() && request.auth.uid == resource.data.ownerId;
+      
+      // 作成：自分のUIDをownerIdとして保存する場合のみ許可
+      allow create: if isAuthenticated() && request.auth.uid == request.resource.data.ownerId;
+      
+      // 更新・削除：既存データの所有者が自分であること
+      allow update, delete: if isAuthenticated() && request.auth.uid == resource.data.ownerId;
+    }
+
+    // 予定（schedules）コレクション
+    // 予定ドキュメント内の projectId を使って、所属案件のオーナーかチェック
+    match /schedules/{scheduleId} {
+      // 読み取り・更新・削除：既存ドキュメントの projectId から案件オーナーを検証
+      allow read, update, delete: if isAuthenticated() &&
+        get(/databases/$(database)/documents/projects/$(resource.data.projectId)).data.ownerId == request.auth.uid;
+
+      // 作成：新規ドキュメント（resource が null）なので request.resource を使う
+      allow create: if isAuthenticated() &&
+        get(/databases/$(database)/documents/projects/$(request.resource.data.projectId)).data.ownerId == request.auth.uid;
+    }
+  }
+}
