@@ -13,14 +13,17 @@ services:
       - HOST=0.0.0.0
       - CHOKIDAR_USEPOLLING=true
 
-  e2e:
+  report:
     build:
       context: .
       dockerfile: Dockerfile.e2e
+    ports:
+      - "9323:9323"
     volumes:
       - .:/app
       - /app/node_modules
     environment:
       - BASE_URL=http://app:3000
+    command: ["npx", "playwright", "show-report", "--host", "0.0.0.0"]
     depends_on:
       - app

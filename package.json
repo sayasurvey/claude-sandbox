@@ -10,8 +10,8 @@
     "postinstall": "nuxt prepare",
     "lint": "eslint .",
     "test": "vitest",
-    "test:e2e": "playwright test",
-    "test:e2e:report": "playwright show-report --host 0.0.0.0"
+    "test:e2e": "npx playwright test",
+    "test:e2e:report": "npx playwright show-report --host 0.0.0.0"
   },
   "dependencies": {
     "firebase": "^12.11.0",
