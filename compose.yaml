@@ -12,3 +12,15 @@ services:
     environment:
       - HOST=0.0.0.0
       - CHOKIDAR_USEPOLLING=true
+
+  e2e:
+    build:
+      context: .
+      dockerfile: Dockerfile.e2e
+    volumes:
+      - .:/app
+      - /app/node_modules
+    environment:
+      - BASE_URL=http://app:3000
+    depends_on:
+      - app
