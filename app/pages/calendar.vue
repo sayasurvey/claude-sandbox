@@ -73,9 +73,10 @@ const openAddModal = (date?: Date, pid?: string) => {
   showModal.value = true
 }
 
-const openEditModal = (schedule: Schedule) => {
+// 候補日の予定をセルからクリックした場合はその日付を確定日として渡す
+const openEditModal = (schedule: Schedule, clickDate?: Date) => {
   editingSchedule.value = schedule
-  modalInitialDate.value = undefined
+  modalInitialDate.value = schedule.status === 'candidate' ? clickDate : undefined
   modalInitialProjectId.value = undefined
   showModal.value = true
 }
@@ -187,7 +188,7 @@ const handleDelete = async (id: string) => {
                 v-for="s in getSchedulesForCell(date, project.id)"
                 :key="s.id"
                 :schedule="s"
-                @click="openEditModal(s)"
+                @click="openEditModal(s, date)"
               />
               <button
                 v-if="hoveredCellKey === cellKey(date, project.id)"

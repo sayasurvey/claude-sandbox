@@ -40,10 +40,17 @@ const initForm = () => {
     projectId.value = props.schedule.projectId
     status.value = props.schedule.status
     selectedTags.value = [...props.schedule.tags]
-    if (props.schedule.status === 'confirmed' && props.schedule.confirmedDate) {
+    // カレンダーのセルから候補日をクリックした場合は、その日付で確定状態にする
+    if (props.schedule.status === 'candidate' && props.initialDate) {
+      status.value = 'confirmed'
+      confirmedDateStr.value = toDateInputString(props.initialDate)
+      candidateDateStrs.value = ['']
+    } else if (props.schedule.status === 'confirmed' && props.schedule.confirmedDate) {
+      status.value = 'confirmed'
       confirmedDateStr.value = toDateInputString(props.schedule.confirmedDate.toDate())
       candidateDateStrs.value = ['']
     } else {
+      status.value = 'candidate'
       const dates = props.schedule.candidateDates.map((t) => toDateInputString(t.toDate()))
       candidateDateStrs.value = dates.length > 0 ? dates : ['']
       confirmedDateStr.value = ''
