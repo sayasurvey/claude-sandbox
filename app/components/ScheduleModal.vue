@@ -40,20 +40,18 @@ const initForm = () => {
     projectId.value = props.schedule.projectId
     status.value = props.schedule.status
     selectedTags.value = [...props.schedule.tags]
-    // カレンダーのセルから候補日をクリックした場合は、その日付で確定状態にする
-    if (props.schedule.status === 'candidate' && props.initialDate) {
-      status.value = 'confirmed'
-      confirmedDateStr.value = toDateInputString(props.initialDate)
-      candidateDateStrs.value = ['']
-    } else if (props.schedule.status === 'confirmed' && props.schedule.confirmedDate) {
-      status.value = 'confirmed'
-      confirmedDateStr.value = toDateInputString(props.schedule.confirmedDate.toDate())
-      candidateDateStrs.value = ['']
+    if (props.schedule.status === 'confirmed' && props.schedule.confirmedDate) {
+      const dateStr = toDateInputString(props.schedule.confirmedDate.toDate())
+      confirmedDateStr.value = dateStr
+      // 確定日を候補日の初期値にも設定（ステータスを候補に変更した際に使用）
+      candidateDateStrs.value = [dateStr]
     } else {
-      status.value = 'candidate'
       const dates = props.schedule.candidateDates.map((t) => toDateInputString(t.toDate()))
       candidateDateStrs.value = dates.length > 0 ? dates : ['']
-      confirmedDateStr.value = ''
+      // クリックした日付を優先し、なければ先頭の候補日を確定日の初期値に設定
+      confirmedDateStr.value = props.initialDate
+        ? toDateInputString(props.initialDate)
+        : (dates[0] ?? '')
     }
   } else {
     title.value = ''
@@ -67,8 +65,8 @@ const initForm = () => {
 }
 
 watch(
-  () => props.modelValue,
-  (open) => {
+  [() => props.modelValue, () => props.schedule],
+  ([open]) => {
     if (open) initForm()
   },
 )

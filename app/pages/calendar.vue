@@ -73,9 +73,9 @@ const openAddModal = (date?: Date, pid?: string) => {
   showModal.value = true
 }
 
-// 候補日の予定をセルからクリックした場合はその日付を確定日として渡す
 const openEditModal = (schedule: Schedule, clickDate?: Date) => {
   editingSchedule.value = schedule
+  // 候補日の場合はクリックした日付を確定日の初期値として渡す（ステータス変更時に使用）
   modalInitialDate.value = schedule.status === 'candidate' ? clickDate : undefined
   modalInitialProjectId.value = undefined
   showModal.value = true
