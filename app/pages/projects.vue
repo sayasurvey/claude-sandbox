@@ -99,6 +99,7 @@
           <p class="delete-warning">
             紐づいているスケジュールもすべて削除されます。この操作は取り消せません。
           </p>
+          <p v-if="deleteError" class="form-error-text mt-2">{{ deleteError }}</p>
         </div>
         <div class="modal-actions">
           <button class="btn-secondary" :disabled="isSubmitting" @click="deletingProject = null">
@@ -124,6 +125,7 @@ const editingProject = ref<Project | null>(null)
 const deletingProject = ref<Project | null>(null)
 const formName = ref('')
 const formError = ref('')
+const deleteError = ref('')
 const isSubmitting = ref(false)
 
 const openAddModal = () => {
@@ -142,6 +144,7 @@ const openEditModal = (project: Project) => {
 
 const openDeleteConfirm = (project: Project) => {
   deletingProject.value = project
+  deleteError.value = ''
 }
 
 const closeModal = () => {
@@ -184,7 +187,7 @@ const handleDelete = async () => {
     await deleteProject(deletingProject.value.id)
     deletingProject.value = null
   } catch {
-    deletingProject.value = null
+    deleteError.value = '削除に失敗しました。もう一度お試しください'
   } finally {
     isSubmitting.value = false
   }

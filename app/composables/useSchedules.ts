@@ -68,7 +68,12 @@ export const useSchedules = () => {
         )
         for (const d of snapshot.docs) {
           const data = d.data() as Omit<Schedule, 'id'>
-          allSchedules.push({ id: d.id, ...data, tags: data.tags ?? [] })
+          allSchedules.push({
+            id: d.id,
+            ...data,
+            candidateDates: data.candidateDates ?? [],
+            tags: data.tags ?? [],
+          })
         }
       }
 

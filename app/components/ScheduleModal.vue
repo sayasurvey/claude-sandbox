@@ -134,7 +134,7 @@ const handleDelete = () => {
             maxlength="50"
             placeholder="予定のタイトル"
             class="form-input"
-          />
+          >
         </div>
 
         <!-- 案件 -->
@@ -150,11 +150,11 @@ const handleDelete = () => {
           <label class="field-label">ステータス</label>
           <div class="radio-group">
             <label class="radio-label">
-              <input type="radio" v-model="status" value="candidate" />
+              <input v-model="status" type="radio" value="candidate" >
               <span class="status-badge status-badge--candidate">調整中</span>
             </label>
             <label class="radio-label">
-              <input type="radio" v-model="status" value="confirmed" />
+              <input v-model="status" type="radio" value="confirmed" >
               <span class="status-badge status-badge--confirmed">確定</span>
             </label>
           </div>
@@ -163,7 +163,7 @@ const handleDelete = () => {
         <!-- 確定日 -->
         <div v-if="status === 'confirmed'" class="field">
           <label class="field-label">確定日</label>
-          <input v-model="confirmedDateStr" type="date" class="form-input" />
+          <input v-model="confirmedDateStr" type="date" class="form-input" >
         </div>
 
         <!-- 候補日 -->
@@ -179,7 +179,7 @@ const handleDelete = () => {
               type="date"
               class="form-input"
               style="flex: 1"
-            />
+            >
             <button
               v-if="candidateDateStrs.length > 1"
               class="btn-icon btn-icon--danger"
@@ -199,7 +199,7 @@ const handleDelete = () => {
           <label class="field-label">タグ</label>
           <div class="tag-group">
             <label v-for="tag in ALL_TAGS" :key="tag" class="tag-checkbox">
-              <input type="checkbox" :value="tag" v-model="selectedTags" />
+              <input v-model="selectedTags" type="checkbox" :value="tag" >
               <span>{{ TAG_LABELS[tag] }}</span>
             </label>
           </div>

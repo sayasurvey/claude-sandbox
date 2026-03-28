@@ -4,8 +4,10 @@ import { Calendar, ChevronLeft, ChevronRight, Loader2 } from 'lucide-vue-next'
 import type { Schedule, ScheduleInput, ScheduleFormData } from '../../types'
 
 const { projects } = useProjects()
-const { schedules, isLoading, addSchedule, updateSchedule, deleteSchedule, confirmSchedule } =
+const { schedules, isLoading, error, addSchedule, updateSchedule, deleteSchedule, confirmSchedule } =
   useSchedules()
+
+const actionError = ref<string | null>(null)
 
 const now = new Date()
 const currentYear = ref(now.getFullYear())
@@ -82,6 +84,7 @@ const openEditModal = (schedule: Schedule, clickDate?: Date) => {
 }
 
 const handleSave = async (id: string | null, data: ScheduleFormData) => {
+  actionError.value = null
   const input: ScheduleInput = {
     title: data.title,
     projectId: data.projectId,
@@ -104,14 +107,17 @@ const handleSave = async (id: string | null, data: ScheduleFormData) => {
     }
   } catch (e) {
     console.error('保存エラー:', e)
+    actionError.value = '保存に失敗しました。もう一度お試しください'
   }
 }
 
 const handleDelete = async (id: string) => {
+  actionError.value = null
   try {
     await deleteSchedule(id)
   } catch (e) {
     console.error('削除エラー:', e)
+    actionError.value = '削除に失敗しました。もう一度お試しください'
   }
 }
 </script>
@@ -134,6 +140,9 @@ const handleDelete = async (id: string) => {
         </button>
       </div>
     </div>
+
+    <!-- エラー表示 -->
+    <div v-if="error || actionError" class="error-banner">{{ error || actionError }}</div>
 
     <!-- ローディング -->
     <div v-if="isLoading" class="loading-state">
@@ -248,6 +257,10 @@ const handleDelete = async (id: string) => {
 
 .month-label {
   @apply text-base font-semibold text-gray-700 min-w-[7rem] text-center;
+}
+
+.error-banner {
+  @apply mb-4 px-4 py-3 bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg;
 }
 
 .loading-state {
