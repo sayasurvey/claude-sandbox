@@ -177,8 +177,7 @@ const handleDelete = () => {
             <input
               v-model="candidateDateStrs[index]"
               type="date"
-              class="form-input"
-              style="flex: 1"
+              class="form-input flex-1"
             >
             <button
               v-if="candidateDateStrs.length > 1"

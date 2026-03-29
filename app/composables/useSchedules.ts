@@ -12,6 +12,7 @@ import {
   type Firestore,
 } from 'firebase/firestore'
 import type { Schedule, ScheduleInput } from '../../types'
+import { MAX_CANDIDATE_COUNT } from '../../types'
 import { toDateKey } from '../utils/dateHelper'
 
 /**
@@ -92,6 +93,9 @@ export const useSchedules = () => {
    */
   const addSchedule = async (input: ScheduleInput): Promise<void> => {
     if (!currentUser.value) throw new Error('未認証')
+    if (input.candidateDates.length > MAX_CANDIDATE_COUNT) {
+      throw new Error(`候補日は最大${MAX_CANDIDATE_COUNT}件までです`)
+    }
 
     const docRef = await addDoc(collection(firestore, 'schedules'), {
       ...input,

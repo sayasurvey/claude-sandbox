@@ -22,9 +22,14 @@ service cloud.firestore {
     // 予定（schedules）コレクション
     // 予定ドキュメント内の projectId を使って、所属案件のオーナーかチェック
     match /schedules/{scheduleId} {
-      // 読み取り・更新・削除：既存ドキュメントの projectId から案件オーナーを検証
-      allow read, update, delete: if isAuthenticated() &&
+      // 読み取り・削除：既存ドキュメントの projectId から案件オーナーを検証
+      allow read, delete: if isAuthenticated() &&
         get(/databases/$(database)/documents/projects/$(resource.data.projectId)).data.ownerId == request.auth.uid;
+
+      // 更新：既存データのオーナー確認に加え、projectId の変更を禁止する
+      allow update: if isAuthenticated() &&
+        get(/databases/$(database)/documents/projects/$(resource.data.projectId)).data.ownerId == request.auth.uid &&
+        request.resource.data.projectId == resource.data.projectId;
 
       // 作成：新規ドキュメント（resource が null）なので request.resource を使う
       allow create: if isAuthenticated() &&

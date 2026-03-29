@@ -16,12 +16,12 @@ const dragOverIndex = ref<number | null>(null)
 
 const onDragStart = (index: number, e: DragEvent) => {
   dragSourceIndex.value = index
-  e.dataTransfer!.effectAllowed = 'move'
+  if (e.dataTransfer) e.dataTransfer.effectAllowed = 'move'
 }
 
 const onDragOver = (e: DragEvent, index: number) => {
   e.preventDefault()
-  e.dataTransfer!.dropEffect = 'move'
+  if (e.dataTransfer) e.dataTransfer.dropEffect = 'move'
   dragOverIndex.value = index
 }
 
