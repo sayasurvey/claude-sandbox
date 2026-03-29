@@ -19,6 +19,10 @@ export default defineNuxtConfig({
   // Vite設定 - Tailwind CSS v4 プラグイン
   vite: {
     plugins: [tailwindcss()],
+    server: {
+      // Docker環境でのE2Eテスト用にホスト名「app」を許可
+      allowedHosts: ['app'],
+    },
   },
 
   // ランタイム設定（環境変数）

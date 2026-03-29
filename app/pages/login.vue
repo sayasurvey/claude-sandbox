@@ -54,7 +54,7 @@
                   required
                   placeholder="example@email.com"
                   class="text-input"
-                />
+                >
               </div>
             </div>
 
@@ -73,7 +73,7 @@
                   placeholder="6文字以上"
                   minlength="6"
                   class="password-input"
-                />
+                >
                 <button
                   type="button"
                   class="toggle-password-btn"
@@ -103,7 +103,7 @@
 
 <script setup lang="ts">
 import { CalendarDays, Mail, Lock, Eye, EyeOff, AlertCircle, Loader2 } from 'lucide-vue-next'
-import type { FirebaseUser } from '../../types/index'
+import type { FirebaseUser } from '../../types'
 
 // ログインページはデフォルトレイアウトを使わない
 definePageMeta({
