@@ -15,13 +15,14 @@ import type { Project } from '../../types'
 /**
  * 案件の CRUD 操作を管理するコンポーザブル
  *
- * @returns projects - 案件リスト
+ * @returns projects - 案件リスト（order フィールド昇順）
  * @returns isLoading - データ取得中フラグ
  * @returns error - エラーメッセージ
  * @returns fetchProjects - 案件一覧を取得
  * @returns addProject - 案件を追加
  * @returns updateProject - 案件名を更新
  * @returns deleteProject - 案件を削除（紐づくスケジュールも削除）
+ * @returns reorderProjects - 案件の表示順序を保存する
  */
 export const useProjects = () => {
   const { $firestore } = useNuxtApp()
@@ -47,10 +48,16 @@ export const useProjects = () => {
         where('ownerId', '==', currentUser.value.uid),
       )
       const snapshot = await getDocs(q)
-      projects.value = snapshot.docs.map((d) => ({
+      const raw = snapshot.docs.map((d) => ({
         id: d.id,
         ...(d.data() as Omit<Project, 'id'>),
       }))
+      // order フィールドがない既存データも考慮してメモリ内でソート
+      projects.value = raw.sort((a, b) => {
+        const aOrder = a.order ?? Infinity
+        const bOrder = b.order ?? Infinity
+        return aOrder - bOrder
+      })
     } catch (e) {
       console.error('案件取得エラー:', e)
       error.value = '案件の取得に失敗しました'
@@ -66,9 +73,11 @@ export const useProjects = () => {
   const addProject = async (name: string): Promise<void> => {
     if (!currentUser.value) throw new Error('未認証')
 
+    const order = projects.value.length
     const docRef = await addDoc(collection(firestore, 'projects'), {
       name,
       ownerId: currentUser.value.uid,
+      order,
       createdAt: serverTimestamp(),
     })
 
@@ -76,6 +85,7 @@ export const useProjects = () => {
       id: docRef.id,
       name,
       ownerId: currentUser.value.uid,
+      order,
     })
   }
 
@@ -113,6 +123,24 @@ export const useProjects = () => {
     projects.value = projects.value.filter((p) => p.id !== id)
   }
 
+  /**
+   * 案件の表示順序を更新する
+   * @param orderedIds - 新しい順序に並んだ案件IDの配列
+   */
+  const reorderProjects = async (orderedIds: string[]): Promise<void> => {
+    const batch = writeBatch(firestore)
+    orderedIds.forEach((id, index) => {
+      batch.update(doc(firestore, 'projects', id), { order: index })
+    })
+    await batch.commit()
+
+    const map = new Map(projects.value.map((p) => [p.id, p]))
+    projects.value = orderedIds.map((id, index) => ({
+      ...map.get(id)!,
+      order: index,
+    }))
+  }
+
   // onMounted では認証解決前にフェッチが実行されて空振りするため、
   // currentUser が確定したタイミングで確実にフェッチする
   watch(currentUser, (user) => {
@@ -127,5 +155,6 @@ export const useProjects = () => {
     addProject,
     updateProject,
     deleteProject,
+    reorderProjects,
   }
 }

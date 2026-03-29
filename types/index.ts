@@ -34,6 +34,8 @@ export interface Project {
   name: string
   /** オーナーのユーザーID */
   ownerId: string
+  /** 表示順序（カレンダー列の並び順） */
+  order?: number
   /** 作成日時 */
   createdAt?: Timestamp
 }

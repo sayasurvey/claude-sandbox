@@ -1,11 +1,52 @@
 <script setup lang="ts">
 import { Timestamp } from 'firebase/firestore'
 import { Calendar, ChevronLeft, ChevronRight, Loader2 } from 'lucide-vue-next'
-import type { Schedule, ScheduleInput, ScheduleFormData } from '../../types'
+import type { Project, Schedule, ScheduleInput, ScheduleFormData } from '../../types'
 
-const { projects } = useProjects()
+const { projects, reorderProjects } = useProjects()
 const { schedules, isLoading, error, addSchedule, updateSchedule, deleteSchedule, confirmSchedule } =
   useSchedules()
+
+// ドラッグ&ドロップ用のローカル順序状態
+const orderedProjects = ref<Project[]>([])
+watch(projects, (val) => { orderedProjects.value = [...val] }, { immediate: true })
+
+const dragSourceIndex = ref<number | null>(null)
+const dragOverIndex = ref<number | null>(null)
+
+const onDragStart = (index: number, e: DragEvent) => {
+  dragSourceIndex.value = index
+  e.dataTransfer!.effectAllowed = 'move'
+}
+
+const onDragOver = (e: DragEvent, index: number) => {
+  e.preventDefault()
+  e.dataTransfer!.dropEffect = 'move'
+  dragOverIndex.value = index
+}
+
+const onDrop = async (index: number) => {
+  if (dragSourceIndex.value === null || dragSourceIndex.value === index) {
+    dragSourceIndex.value = null
+    dragOverIndex.value = null
+    return
+  }
+
+  const newOrder = [...orderedProjects.value]
+  const [moved] = newOrder.splice(dragSourceIndex.value, 1)
+  newOrder.splice(index, 0, moved!)
+  orderedProjects.value = newOrder
+
+  dragSourceIndex.value = null
+  dragOverIndex.value = null
+
+  await reorderProjects(newOrder.map((p) => p.id))
+}
+
+const onDragEnd = () => {
+  dragSourceIndex.value = null
+  dragOverIndex.value = null
+}
 
 const actionError = ref<string | null>(null)
 
@@ -164,10 +205,20 @@ const handleDelete = async (id: string) => {
           <tr>
             <th class="date-col-header">日付</th>
             <th
-              v-for="project in projects"
+              v-for="(project, index) in orderedProjects"
               :key="project.id"
               class="project-col-header"
+              :class="{
+                'project-col-header--drag-over': dragOverIndex === index && dragSourceIndex !== index,
+                'project-col-header--dragging': dragSourceIndex === index,
+              }"
+              draggable="true"
+              @dragstart="onDragStart(index, $event)"
+              @dragover="onDragOver($event, index)"
+              @drop="onDrop(index)"
+              @dragend="onDragEnd"
             >
+              <span class="drag-handle">⠿</span>
               {{ project.name }}
             </th>
           </tr>
@@ -187,7 +238,7 @@ const handleDelete = async (id: string) => {
 
             <!-- 案件セル -->
             <td
-              v-for="project in projects"
+              v-for="project in orderedProjects"
               :key="project.id"
               class="schedule-cell"
               @mouseenter="hoveredCellKey = cellKey(date, project.id)"
@@ -298,7 +349,20 @@ const handleDelete = async (id: string) => {
 
 .project-col-header {
   @apply min-w-[160px] px-3 py-2.5 text-left text-xs font-medium text-gray-700
-         bg-gray-50 border-b border-r border-gray-200 last:border-r-0;
+         bg-gray-50 border-b border-r border-gray-200 last:border-r-0
+         cursor-grab select-none;
+}
+
+.project-col-header--dragging {
+  @apply opacity-40;
+}
+
+.project-col-header--drag-over {
+  @apply bg-blue-50 border-l-2 border-l-blue-400;
+}
+
+.drag-handle {
+  @apply inline-block mr-1 text-gray-400 text-xs;
 }
 
 .calendar-row {
