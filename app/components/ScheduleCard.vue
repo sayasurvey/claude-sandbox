@@ -1,10 +1,15 @@
 <script setup lang="ts">
 import type { Schedule } from '../../types'
-import { TAG_LABELS } from '../../types'
+import { TAG_LABELS, isDefaultTag } from '../../types'
 
-defineProps<{
+const props = defineProps<{
   schedule: Schedule
 }>()
+
+const getTagLabel = (tag: string): string => {
+  if (isDefaultTag(tag)) return TAG_LABELS[tag]
+  return tag
+}
 
 defineEmits<{
   click: []
@@ -25,7 +30,7 @@ defineEmits<{
         class="schedule-tag"
         :class="schedule.status === 'confirmed' ? 'schedule-tag--confirmed' : 'schedule-tag--candidate'"
       >
-        {{ TAG_LABELS[tag] }}
+        {{ getTagLabel(tag) }}
       </span>
     </span>
   </button>

@@ -6,6 +6,7 @@ import type { Project, Schedule, ScheduleInput, ScheduleFormData } from '../../t
 const { projects, reorderProjects } = useProjects()
 const { schedules, isLoading, error, addSchedule, updateSchedule, deleteSchedule, confirmSchedule } =
   useSchedules()
+const { settings: congestionSettings } = useCongestionSettings()
 
 // ドラッグ&ドロップ用のローカル順序状態
 const orderedProjects = ref<Project[]>([])
@@ -273,6 +274,7 @@ const handleDelete = async (id: string) => {
       :initial-date="modalInitialDate"
       :initial-project-id="modalInitialProjectId"
       :projects="projects"
+      :custom-tags="congestionSettings.customTags"
       @save="handleSave"
       @delete="handleDelete"
     />

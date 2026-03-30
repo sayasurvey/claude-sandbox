@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { X, Plus, Trash2 } from 'lucide-vue-next'
-import type { Schedule, ScheduleTag, ScheduleStatus, Project, ScheduleFormData } from '../../types'
+import type { Schedule, ScheduleStatus, Project, ScheduleFormData, CustomTag } from '../../types'
 import { TAG_LABELS, ALL_TAGS, MAX_CANDIDATE_COUNT } from '../../types'
 
 const props = defineProps<{
@@ -9,6 +9,7 @@ const props = defineProps<{
   initialDate?: Date
   initialProjectId?: string
   projects: Project[]
+  customTags?: CustomTag[]
 }>()
 
 const emit = defineEmits<{
@@ -22,7 +23,7 @@ const projectId = ref('')
 const status = ref<ScheduleStatus>('candidate')
 const confirmedDateStr = ref('')
 const candidateDateStrs = ref<string[]>([''])
-const selectedTags = ref<ScheduleTag[]>([])
+const selectedTags = ref<string[]>([])
 
 const isEditMode = computed(() => !!props.schedule)
 const canAddDate = computed(
@@ -200,6 +201,10 @@ const handleDelete = () => {
             <label v-for="tag in ALL_TAGS" :key="tag" class="tag-checkbox">
               <input v-model="selectedTags" type="checkbox" :value="tag" >
               <span>{{ TAG_LABELS[tag] }}</span>
+            </label>
+            <label v-for="ct in (customTags ?? [])" :key="ct.id" class="tag-checkbox">
+              <input v-model="selectedTags" type="checkbox" :value="ct.id" >
+              <span>{{ ct.label }}</span>
             </label>
           </div>
         </div>
