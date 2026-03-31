@@ -27,10 +27,10 @@ import type { Project } from '../../types'
 export const useProjects = () => {
   const { $firestore } = useNuxtApp()
   const firestore = $firestore as Firestore
-  const { currentUser } = useAuth()
+  const { currentUser, isLoading: isAuthLoading } = useAuth()
 
   const projects = ref<Project[]>([])
-  const isLoading = ref(false)
+  const isLoading = ref(true)
   const error = ref<string | null>(null)
 
   /**
@@ -143,8 +143,13 @@ export const useProjects = () => {
 
   // onMounted では認証解決前にフェッチが実行されて空振りするため、
   // currentUser が確定したタイミングで確実にフェッチする
-  watch(currentUser, (user) => {
-    if (user) fetchProjects()
+  watch([currentUser, isAuthLoading], ([user, authLoading]) => {
+    if (authLoading) return
+    if (user) {
+      fetchProjects()
+    } else {
+      isLoading.value = false
+    }
   }, { immediate: true })
 
   return {
