@@ -6,9 +6,11 @@ const props = defineProps<{
   schedule: Schedule
 }>()
 
+const { settings } = useCongestionSettings()
+
 const getTagLabel = (tag: string): string => {
   if (isDefaultTag(tag)) return TAG_LABELS[tag]
-  return tag
+  return settings.value.customTags.find((ct) => ct.id === tag)?.label ?? tag
 }
 
 defineEmits<{
