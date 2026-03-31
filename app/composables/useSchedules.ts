@@ -170,6 +170,32 @@ export const useSchedules = () => {
     })
   }
 
+  /**
+   * 指定されたタグIDをすべてのスケジュールの tags 配列から削除する
+   * @param tagIds - 削除するタグ ID の配列
+   */
+  const removeTagFromSchedules = async (tagIds: string[]): Promise<void> => {
+    if (tagIds.length === 0) return
+
+    const batch = writeBatch(firestore)
+    let hasUpdates = false
+
+    for (const schedule of schedules.value) {
+      const newTags = schedule.tags.filter((t) => !tagIds.includes(t))
+      if (newTags.length < schedule.tags.length) {
+        batch.update(doc(firestore, 'schedules', schedule.id), { tags: newTags })
+        hasUpdates = true
+      }
+    }
+
+    if (hasUpdates) await batch.commit()
+
+    schedules.value = schedules.value.map((s) => ({
+      ...s,
+      tags: s.tags.filter((t) => !tagIds.includes(t)),
+    }))
+  }
+
   watch(
     currentUser,
     (user) => {
@@ -187,5 +213,6 @@ export const useSchedules = () => {
     updateSchedule,
     deleteSchedule,
     confirmSchedule,
+    removeTagFromSchedules,
   }
 }

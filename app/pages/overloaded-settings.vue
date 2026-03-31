@@ -163,6 +163,7 @@ import { TAG_LABELS, ALL_TAGS, DEFAULT_CONGESTION_SETTINGS } from '../../types'
 import type { CustomTag, DefaultTagWorkloads } from '../../types'
 
 const { settings, isLoading, error, saveSettings } = useCongestionSettings()
+const { removeTagFromSchedules } = useSchedules()
 
 const form = reactive({
   enableScheduleCountCheck: DEFAULT_CONGESTION_SETTINGS.enableScheduleCountCheck,
@@ -202,6 +203,10 @@ const handleSave = async () => {
   isSaving.value = true
   saveSuccess.value = false
   try {
+    const existingTagIds = new Set(settings.value.customTags.map((t) => t.id))
+    const newTagIds = new Set(form.customTags.filter((t) => t.label.trim()).map((t) => t.id))
+    const removedTagIds = [...existingTagIds].filter((id) => !newTagIds.has(id))
+
     await saveSettings({
       enableScheduleCountCheck: form.enableScheduleCountCheck,
       maxSchedulesPerDay: form.maxSchedulesPerDay,
@@ -210,6 +215,11 @@ const handleSave = async () => {
       defaultTagWorkloads: { ...form.defaultTagWorkloads },
       customTags: form.customTags.filter((t) => t.label.trim()).map((t) => ({ ...t })),
     })
+
+    if (removedTagIds.length > 0) {
+      await removeTagFromSchedules(removedTagIds)
+    }
+
     saveSuccess.value = true
     setTimeout(() => { saveSuccess.value = false }, 3000)
   } catch {
