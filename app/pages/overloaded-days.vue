@@ -73,27 +73,50 @@
             :key="schedule.id"
             class="schedule-item"
           >
-            <span
-              class="schedule-status"
-              :class="schedule.status === 'confirmed' ? 'schedule-status--confirmed' : 'schedule-status--candidate'"
-            >
-              {{ schedule.status === 'confirmed' ? '確定' : '候補' }}
-            </span>
-            <span class="schedule-title">{{ schedule.title }}</span>
-            <div class="schedule-tags">
-              <span v-for="tag in schedule.tags" :key="tag" class="tag-chip">
-                {{ getTagLabel(tag) }}
+            <div class="schedule-main">
+              <span
+                class="schedule-status"
+                :class="schedule.status === 'confirmed' ? 'schedule-status--confirmed' : 'schedule-status--candidate'"
+              >
+                {{ schedule.status === 'confirmed' ? '確定' : '候補' }}
               </span>
+              <span class="schedule-title">{{ schedule.title }}</span>
+              <div class="schedule-tags">
+                <span v-for="tag in schedule.tags" :key="tag" class="tag-chip">
+                  {{ getTagLabel(tag) }}
+                </span>
+              </div>
+            </div>
+            <div
+              v-if="schedule.status === 'candidate' && schedule.otherCandidateDates.length > 0"
+              class="candidate-alternatives"
+            >
+              <span class="alternatives-label">他の候補日</span>
+              <div class="alternatives-dates">
+                <span
+                  v-for="alt in schedule.otherCandidateDates"
+                  :key="alt.dateKey"
+                  class="alt-date"
+                  :class="alt.dateKey === schedule.recommendedDate?.dateKey ? 'alt-date--recommended' : 'alt-date--normal'"
+                >
+                  {{ formatDateLabel(alt.date) }}
+                  <span v-if="alt.dateKey === schedule.recommendedDate?.dateKey" class="recommended-badge">
+                    <Sparkles class="w-2.5 h-2.5" />
+                    おすすめ
+                  </span>
+                </span>
+              </div>
             </div>
           </li>
         </ul>
+
       </li>
     </ul>
   </div>
 </template>
 
 <script setup lang="ts">
-import { Loader2, Settings, CalendarDays, Tag, CheckCircle } from 'lucide-vue-next'
+import { Loader2, Settings, CalendarDays, Tag, CheckCircle, Sparkles } from 'lucide-vue-next'
 import { TAG_LABELS, isDefaultTag } from '../../types'
 import type { Schedule } from '../../types'
 
@@ -118,10 +141,21 @@ const getTagWorkload = (tagId: string): number => {
   return settings.value.customTags.find((ct) => ct.id === tagId)?.workload ?? 0
 }
 
+interface CandidateDateInfo {
+  date: Date
+  dateKey: string
+  totalWorkload: number
+}
+
+interface ScheduleWithRecommendation extends Schedule {
+  otherCandidateDates: CandidateDateInfo[]
+  recommendedDate: CandidateDateInfo | null
+}
+
 interface OverloadedDay {
   dateKey: string
   date: Date
-  schedules: Schedule[]
+  schedules: ScheduleWithRecommendation[]
   scheduleCount: number
   tagWorkload: number
   reasons: {
@@ -155,6 +189,15 @@ const overloadedDays = computed((): OverloadedDay[] => {
     }
   }
 
+  // 日付ごとの工数を事前計算
+  const dateWorkloadMap = new Map<string, number>()
+  for (const [dateKey, daySchedules] of dateMap) {
+    const workload = daySchedules.reduce((sum, s) => {
+      return sum + s.tags.reduce((tagSum, tagId) => tagSum + getTagWorkload(tagId), 0)
+    }, 0)
+    dateWorkloadMap.set(dateKey, workload)
+  }
+
   const yesterday = new Date()
   yesterday.setDate(yesterday.getDate() - 1)
   const yesterdayKey = toDateKey(yesterday)
@@ -163,18 +206,36 @@ const overloadedDays = computed((): OverloadedDay[] => {
   for (const [dateKey, daySchedules] of dateMap) {
     if (dateKey < yesterdayKey) continue
     const scheduleCount = daySchedules.length
-    const tagWorkload = daySchedules.reduce((sum, s) => {
-      return sum + s.tags.reduce((tagSum, tagId) => tagSum + getTagWorkload(tagId), 0)
-    }, 0)
+    const tagWorkload = dateWorkloadMap.get(dateKey) ?? 0
 
     const countTriggered = enableScheduleCountCheck && scheduleCount >= maxSchedulesPerDay
     const workloadTriggered = enableTagWorkloadCheck && tagWorkload > tagWorkloadLimit
 
     if (countTriggered || workloadTriggered) {
+      const schedulesWithRecommendation: ScheduleWithRecommendation[] = daySchedules.map((s) => {
+        if (s.status !== 'candidate') {
+          return { ...s, otherCandidateDates: [], recommendedDate: null }
+        }
+        const otherCandidateDates: CandidateDateInfo[] = s.candidateDates
+          .map((t) => t.toDate())
+          .filter((d) => toDateKey(d) !== dateKey)
+          .map((d) => {
+            const dk = toDateKey(d)
+            return { date: d, dateKey: dk, totalWorkload: dateWorkloadMap.get(dk) ?? 0 }
+          })
+        const recommendedDate =
+          otherCandidateDates.length > 0
+            ? otherCandidateDates.reduce((best, curr) =>
+                curr.totalWorkload < best.totalWorkload ? curr : best,
+              )
+            : null
+        return { ...s, otherCandidateDates, recommendedDate }
+      })
+
       result.push({
         dateKey,
         date: fromDateInputString(dateKey),
-        schedules: daySchedules,
+        schedules: schedulesWithRecommendation,
         scheduleCount,
         tagWorkload,
         reasons: {
@@ -266,11 +327,11 @@ const getDayClass = (date: Date): string => {
 }
 
 .day-card {
-  @apply bg-white rounded-xl border border-gray-100 shadow-sm p-4;
+  @apply bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden;
 }
 
 .day-header {
-  @apply flex items-center justify-between mb-3;
+  @apply flex items-center justify-between px-4 py-3 bg-gray-50 border-b border-gray-200;
 }
 
 .day-date-group {
@@ -310,11 +371,43 @@ const getDayClass = (date: Date): string => {
 }
 
 .schedule-list {
-  @apply flex flex-col gap-1.5;
+  @apply flex flex-col divide-y divide-gray-100 px-4 py-2;
 }
 
 .schedule-item {
-  @apply flex items-center gap-2 text-sm;
+  @apply flex flex-col gap-2 text-sm py-3;
+}
+
+.schedule-main {
+  @apply flex items-center gap-2;
+}
+
+.candidate-alternatives {
+  @apply flex items-start gap-2 ml-1 pl-3 border-l-2 border-teal-100;
+}
+
+.alternatives-label {
+  @apply flex-shrink-0 text-xs text-gray-400 mt-0.5 whitespace-nowrap;
+}
+
+.alternatives-dates {
+  @apply flex flex-wrap gap-1.5;
+}
+
+.alt-date {
+  @apply inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full font-medium;
+}
+
+.alt-date--normal {
+  @apply bg-gray-100 text-gray-600;
+}
+
+.alt-date--recommended {
+  @apply bg-teal-50 text-teal-700 ring-1 ring-teal-200;
+}
+
+.recommended-badge {
+  @apply inline-flex items-center gap-0.5 font-semibold;
 }
 
 .schedule-status {
@@ -330,7 +423,7 @@ const getDayClass = (date: Date): string => {
 }
 
 .schedule-title {
-  @apply flex-1 text-gray-800 truncate;
+  @apply flex-1 text-gray-800 font-medium truncate;
 }
 
 .schedule-tags {
@@ -338,6 +431,6 @@ const getDayClass = (date: Date): string => {
 }
 
 .tag-chip {
-  @apply text-xs bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded;
+  @apply text-xs bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded;
 }
 </style>
