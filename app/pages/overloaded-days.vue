@@ -155,8 +155,13 @@ const overloadedDays = computed((): OverloadedDay[] => {
     }
   }
 
+  const yesterday = new Date()
+  yesterday.setDate(yesterday.getDate() - 1)
+  const yesterdayKey = toDateKey(yesterday)
+
   const result: OverloadedDay[] = []
   for (const [dateKey, daySchedules] of dateMap) {
+    if (dateKey < yesterdayKey) continue
     const scheduleCount = daySchedules.length
     const tagWorkload = daySchedules.reduce((sum, s) => {
       return sum + s.tags.reduce((tagSum, tagId) => tagSum + getTagWorkload(tagId), 0)
