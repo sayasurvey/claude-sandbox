@@ -3,9 +3,12 @@ import { Timestamp } from 'firebase/firestore'
 import { Calendar, ChevronLeft, ChevronRight, Loader2 } from 'lucide-vue-next'
 import type { Project, Schedule, ScheduleInput, ScheduleFormData } from '../../types'
 
-const { projects, reorderProjects } = useProjects()
-const { schedules, isLoading, error, addSchedule, updateSchedule, deleteSchedule, confirmSchedule } =
+const { projects, isLoading: isProjectsLoading, reorderProjects } = useProjects()
+const { schedules, isLoading: isSchedulesLoading, error, addSchedule, updateSchedule, deleteSchedule, confirmSchedule } =
   useSchedules()
+
+const isLoading = computed(() => isProjectsLoading.value || isSchedulesLoading.value)
+const { settings: congestionSettings } = useCongestionSettings()
 
 // ドラッグ&ドロップ用のローカル順序状態
 const orderedProjects = ref<Project[]>([])
@@ -273,6 +276,7 @@ const handleDelete = async (id: string) => {
       :initial-date="modalInitialDate"
       :initial-project-id="modalInitialProjectId"
       :projects="projects"
+      :custom-tags="congestionSettings.customTags"
       @save="handleSave"
       @delete="handleDelete"
     />

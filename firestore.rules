@@ -19,6 +19,12 @@ service cloud.firestore {
       allow update, delete: if isAuthenticated() && request.auth.uid == resource.data.ownerId;
     }
 
+    // 過密日設定（congestion_settings）コレクション
+    // ドキュメントIDがユーザー自身のUIDである場合のみ読み書き許可
+    match /congestion_settings/{userId} {
+      allow read, write: if isAuthenticated() && request.auth.uid == userId;
+    }
+
     // 予定（schedules）コレクション
     // 予定ドキュメント内の projectId を使って、所属案件のオーナーかチェック
     match /schedules/{scheduleId} {
