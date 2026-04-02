@@ -23,6 +23,18 @@
     <main class="main-content">
       <slot />
     </main>
+
+    <!-- フッター -->
+    <footer class="site-footer">
+      <div class="footer-inner">
+        <nav class="footer-nav">
+          <NuxtLink to="/terms" class="footer-link">利用規約</NuxtLink>
+          <span class="footer-sep">|</span>
+          <NuxtLink to="/privacy-policy" class="footer-link">プライバシーポリシー</NuxtLink>
+        </nav>
+        <p class="footer-copy">&copy; {{ new Date().getFullYear() }} Runteq_sayaka</p>
+      </div>
+    </footer>
   </div>
 </template>
 
@@ -49,7 +61,7 @@ const handleSignOut = async (): Promise<void> => {
 @reference "tailwindcss";
 
 .layout-wrapper {
-  @apply min-h-screen bg-gray-50;
+  @apply min-h-screen bg-gray-50 flex flex-col;
 }
 
 .site-header {
@@ -74,5 +86,29 @@ const handleSignOut = async (): Promise<void> => {
 
 .main-content {
   @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8;
+}
+
+.site-footer {
+  @apply bg-white border-t border-gray-100 mt-auto;
+}
+
+.footer-inner {
+  @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col items-center gap-2;
+}
+
+.footer-copy {
+  @apply text-xs text-gray-400;
+}
+
+.footer-nav {
+  @apply flex items-center gap-2;
+}
+
+.footer-link {
+  @apply text-xs text-gray-500 hover:text-blue-600 transition-colors;
+}
+
+.footer-sep {
+  @apply text-xs text-gray-300;
 }
 </style>
